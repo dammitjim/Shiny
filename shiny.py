@@ -4,6 +4,8 @@ import time
 
 from bs4 import BeautifulSoup
 
+from worker import classify
+
 headers = {
     "Accept-Encoding": "gzip, deflate",
     'From': 'thisisjimah@gmail.com',
@@ -13,30 +15,53 @@ headers = {
 base_url = "http://firefly.wikia.com"
 
 
+def queue_url(url):
+    """
+
+    Stores the url in crawled urls.
+
+    """
+    pass
+
+
 def valid_href(href):
+    """
+
+    Validates the given url to see if it should be added
+
+    """
     if href is None:
         return False
+
     if "Special:" in href:
         return False
+
     if not re.match("^\/wiki\/[a-zA-Z&\/?]+", href):
         return False
+
     return True
 
 
-def classify(soup):
-    pass
+def fire_at(url):
+    """
 
+    Hits the given url, queues urls found in the soup, extracts data.
 
-def classify_character(soup):
-    pass
+    """
+    r = requests.get(url, headers=headers)
 
+    if r.status_code == 200:
+        soup = BeautifulSoup(r.text, 'html.parser')
 
-def classify_episode(soup):
-    pass
+        # Send our soup off for classification
+        classify(soup)
 
+        # Iterate through all available links and queue them if valid
+        for link in soup.find_all('a'):
+            l = link.get('href')
 
-def classify_actor(soup):
-    pass
+            if valid_href(l):
+                queue_url(l)
 
 
 def fire():
@@ -47,20 +72,27 @@ def fire():
 
     if r.status_code == 200:
         soup = BeautifulSoup(r.text, 'html.parser')
+        classify(soup)
+
         for link in soup.findAll('a'):
             l = link.get('href')
+
             if valid_href(l):
                 links.append(l)
 
     for i in range(2):
         print("Going to: " + links[i])
         r = requests.get(base_url + links[i])
+
         if r.status_code == 200:
             soup = BeautifulSoup(r.text, 'html.parser')
+
             for link in soup.findAll('a'):
                 l = link.get('href')
+
                 if valid_href(l):
                     links.append(l)
+
         print(links)
         time.sleep(10)
 
