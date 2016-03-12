@@ -46,8 +46,7 @@ def fire():
         headers=headers)
 
     if r.status_code == 200:
-        soup = BeautifulSoup(r.text)
-
+        soup = BeautifulSoup(r.text, 'html.parser')
         for link in soup.findAll('a'):
             l = link.get('href')
             if valid_href(l):
@@ -57,7 +56,7 @@ def fire():
         print("Going to: " + links[i])
         r = requests.get(base_url + links[i])
         if r.status_code == 200:
-            soup = BeautifulSoup(r.text)
+            soup = BeautifulSoup(r.text, 'html.parser')
             for link in soup.findAll('a'):
                 l = link.get('href')
                 if valid_href(l):
