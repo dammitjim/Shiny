@@ -1,5 +1,6 @@
-import scrapy
 import re
+
+import scrapy
 
 
 class ShinySpider(scrapy.Spider):
@@ -24,7 +25,8 @@ class ShinySpider(scrapy.Spider):
 
         return False
 
-    def _clean_text(self, text_element):
+    @staticmethod
+    def _clean_text(text_element):
         if text_element.startswith(","):
             text_element = text_element[1:]
 
@@ -38,8 +40,10 @@ class ShinySpider(scrapy.Spider):
 
         for element in elements:
             el = element.strip()
+
             if self._is_garbage(el):
                 continue
+
             els.append(self._clean_text(el))
 
         return ",".join(els)
