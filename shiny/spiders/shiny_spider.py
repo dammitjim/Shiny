@@ -7,6 +7,8 @@ class ShinySpider(scrapy.Spider):
     name = "shiny"
     start_urls = [
         "http://firefly.wikia.com/wiki/Malcolm_Reynolds",
+        "http://firefly.wikia.com/wiki/Jayne_Cobb",
+        "http://firefly.wikia.com/wiki/Kaywinnet_Lee_Frye",
     ]
 
     def parse(self, response):

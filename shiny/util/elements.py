@@ -1,11 +1,11 @@
 import re
-from typing import List
 
 _reference_regex = re.compile('\[[0-9]*\]')
 
 
-def _should_ignore_text_element(text_element: str) -> bool:
+def _should_ignore_text_element(text_element):
     """Check if the provided element should be skipped."""
+    text_element = text_element.strip()
     if text_element == "":
         return True
 
@@ -21,21 +21,23 @@ def _should_ignore_text_element(text_element: str) -> bool:
     return False
 
 
-def clean_text_element(text_element: str):
+def clean_text_element(text_element):
     """Clean an individual text string.
 
     :type text_element: string
     """
+    text_element = text_element.strip()
+    # text_element = _clear_commas(text_element)
     if text_element.startswith(','):
         text_element = text_element[1:]
 
     if text_element.endswith(','):
         text_element = text_element[:len(text_element) - 1]
 
-    return text_element.strip()
+    return text_element.replace(u'\xa0', u' ')
 
 
-def clean_text_elements(text_elements: List[str]) -> str:
+def clean_text_elements(text_elements):
     """Clean the list of text elements extracted from a selector.
 
     :param text_elements: the extracted raw strings
@@ -49,4 +51,4 @@ def clean_text_elements(text_elements: List[str]) -> str:
 
         cleaned.append(clean_text_element(element))
 
-    return ",".join(cleaned)
+    return "||".join(cleaned)
