@@ -24,7 +24,7 @@ def _should_ignore_text_element(text_element):
 def _sketchy_string_replacements(text):
     """Run any sketchy string replaces here."""
     _text = text
-    _text.replace(u'\xa0', u' ')
+    _text = _text.replace(u'\xa0', ' ')
     return _text
 
 
@@ -43,7 +43,7 @@ def clean_text_element(text_element):
 
     text_element = _sketchy_string_replacements(text_element)
 
-    return text_element
+    return text_element.strip()
 
 
 def clean_text_elements(text_elements):
@@ -54,10 +54,19 @@ def clean_text_elements(text_elements):
     """
     cleaned = []
 
-    for element in text_elements:
+    for index, element in enumerate(text_elements):
         if _should_ignore_text_element(element):
             continue
 
-        cleaned.append(clean_text_element(element))
+        cl = clean_text_element(element)
+
+        # If we start with a bracked we can reasonably assume this is
+        # metadata for the previous element.
+        if cl.startswith("(") and len(cleaned) > 0:
+            previous = cleaned[len(cleaned) - 1]
+            previous = "{0} {1}".format(previous, element)
+            cleaned[len(cleaned) - 1] = previous
+        else:
+            cleaned.append(cl)
 
     return "||".join(cleaned)

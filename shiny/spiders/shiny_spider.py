@@ -2,6 +2,8 @@ import scrapy
 
 from shiny.util.elements import clean_text_elements
 
+PAGE_CLASSIFICATION = "PAGE_CLASSIFICATION"
+
 
 class ShinySpider(scrapy.Spider):
     name = "shiny"
@@ -10,6 +12,14 @@ class ShinySpider(scrapy.Spider):
         "http://firefly.wikia.com/wiki/Jayne_Cobb",
         "http://firefly.wikia.com/wiki/Kaywinnet_Lee_Frye",
     ]
+
+    def _should_parse(self, infobox_element):
+        """Determine if this page should be parsed or skipped.
+
+        Based on the infobox DOM element.
+
+        """
+        return True
 
     def parse(self, response):
         attributes = {}
@@ -44,4 +54,5 @@ class ShinySpider(scrapy.Spider):
                 continue
 
             attributes[key] = value
+
         yield attributes
