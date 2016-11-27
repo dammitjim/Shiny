@@ -21,20 +21,29 @@ def _should_ignore_text_element(text_element):
     return False
 
 
+def _sketchy_string_replacements(text):
+    """Run any sketchy string replaces here."""
+    _text = text
+    _text.replace(u'\xa0', u' ')
+    return _text
+
+
 def clean_text_element(text_element):
     """Clean an individual text string.
 
     :type text_element: string
     """
     text_element = text_element.strip()
-    # text_element = _clear_commas(text_element)
+
     if text_element.startswith(','):
         text_element = text_element[1:]
 
     if text_element.endswith(','):
         text_element = text_element[:len(text_element) - 1]
 
-    return text_element.replace(u'\xa0', u' ')
+    text_element = _sketchy_string_replacements(text_element)
+
+    return text_element
 
 
 def clean_text_elements(text_elements):
