@@ -25,6 +25,7 @@ def _sketchy_string_replacements(text):
     """Run any sketchy string replaces here."""
     _text = text
     _text = _text.replace(u'\xa0', ' ')
+    _text = _text.replace(u'\n', '')
     return _text
 
 

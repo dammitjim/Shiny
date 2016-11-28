@@ -1,25 +1,30 @@
 import scrapy
 
+from scrapy.utils.response import get_base_url
+
 from shiny.util.elements import clean_text_elements
 
-PAGE_CLASSIFICATION = "PAGE_CLASSIFICATION"
+CLASSIFICATION_PERSON = "Person"
 
 
 class ShinySpider(scrapy.Spider):
     name = "shiny"
+    base_url = "http://firefly.wikia.com"
     start_urls = [
         "http://firefly.wikia.com/wiki/Malcolm_Reynolds",
-        "http://firefly.wikia.com/wiki/Jayne_Cobb",
-        "http://firefly.wikia.com/wiki/Kaywinnet_Lee_Frye",
     ]
 
-    def _should_parse(self, infobox_element):
+    def _get_classification(self, parsed_elements):
         """Determine if this page should be parsed or skipped.
 
         Based on the infobox DOM element.
 
         """
-        return True
+        for key in parsed_elements.keys():
+            if key == "Gender":
+                return CLASSIFICATION_PERSON
+
+        return None
 
     def parse(self, response):
         attributes = {}
@@ -32,6 +37,10 @@ class ShinySpider(scrapy.Spider):
         attributes["title"] = title_element[0]
 
         infobox = response.css("table.infoboxtable")
+        if len(infobox) == 0:
+            self.logger.error("no infobox present for page")
+            return
+
         for row in infobox.css("tr"):
             data_nodes = row.css("td")
 
@@ -43,16 +52,34 @@ class ShinySpider(scrapy.Spider):
 
             key = clean_text_elements(key_selector)
             if key is None:
-                # TODO handle
-                print("key fail")
+                self.logger.error("unable to clean key " + key_selector)
                 continue
 
             value = clean_text_elements(value_selector)
             if value is None:
-                # TODO handle
-                print("value fail")
+                self.logger.error("unable to clean value " + value_selector)
                 continue
 
             attributes[key] = value
+
+        for href in response.css("#WikiaArticle a::attr(href)"):
+            extr = href.extract()
+            if not extr.startswith("/"):
+                self.logger.warn("not following url: " + extr)
+                continue
+            if "?" in extr:
+                spl = extr.split("?")
+                extr = spl[0]
+            yield scrapy.Request(
+                self.base_url + extr, callback=self.parse)
+
+        clfc = self._get_classification(attributes)
+        if clfc is None:
+            self.logger.error("unable to determine classification page: {0}"
+                              .format(attributes))
+            return
+
+        url = get_base_url(response)
+        attributes["WIKI_URL"] = url
 
         yield attributes
